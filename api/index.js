@@ -1,12 +1,21 @@
-module.exports = async (req, res) => {
+const express = require('express');
+const app = express();
+
+// Включаем обязательную поддержку чтения POST-данных формы, которую шлет Java
+app.use(express.urlencoded({ extended: true }));
+app.use(express.json());
+
+app.post('/api', async (req, res) => {
+    // Включаем заголовки
     res.setHeader('Access-Control-Allow-Origin', '*');
 
-    const token = req.body?.token || req.query?.token;
-    const chatId = req.body?.chat_id || req.query?.chat_id;
-    const text = req.body?.text || req.query?.text;
+    // Достаем скрытые параметры
+    const token = req.body?.token;
+    const chatId = req.body?.chat_id;
+    const text = req.body?.text;
 
     if (!token || !chatId || !text) {
-        return res.status(400).send("Error: Missing parameters (token, chat_id, or text)");
+        return res.status(400).send("Error: Missing parameters inside body");
     }
 
     try {
@@ -24,4 +33,7 @@ module.exports = async (req, res) => {
     } catch (err) {
         return res.status(500).send("Vercel Bridge Error: " + err.message);
     }
-};
+});
+
+// Экспортируем приложение для Vercel
+module.exports = app;
